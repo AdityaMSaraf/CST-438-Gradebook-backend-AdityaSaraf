@@ -34,3 +34,4 @@ CREATE TABLE assignment_grade (
   FOREIGN KEY (enrollment_id) REFERENCES enrollment (id) on delete cascade,
   FOREIGN KEY (assignment_id) REFERENCES assignment (id) on delete cascade
 );
+
