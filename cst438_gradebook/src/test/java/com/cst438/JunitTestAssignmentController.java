@@ -2,9 +2,10 @@ package com.cst438;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cst438.controllers.AssignmentController;
 import com.cst438.domain.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,16 +37,18 @@ public class JunitTestAssignmentController {
     @MockBean
     private AssignmentRepository assignmentRepository;
 
-    @MockBean
-    private CourseRepository courseRepository;
-
+    //todo FIX CREATE
     @Test
     public void createAssignmentTest() throws Exception{
-        AssignmentDTO assignmentDTO = new AssignmentDTO(69, "Recursion", "2023-10-13", "Design & Analysis of Algorithms", 370);
+        Course course = new Course();
+        course.setCourse_id(31045);
+        course.setTitle("CST 363 - Introduction to Database Systems");
+        AssignmentDTO assignmentDTO = new AssignmentDTO(1, "Recursion", "2023-10-13", "CST 363 - Introduction to Database Systems", 31045);
         Assignment assignment = new Assignment();
         assignment.setId(assignmentDTO.id());
         assignment.setName(assignmentDTO.assignmentName());
         assignment.setDueDate(Date.valueOf(assignmentDTO.dueDate()));
+        assignment.setCourse(course);
 
         when(assignmentRepository.save(assignment)).thenReturn(assignment);
 
@@ -60,17 +64,59 @@ public class JunitTestAssignmentController {
     }
 
     @Test
+    public void updateAssignmentTest() throws Exception{
+        Course course = new Course();
+        course.setCourse_id(31249);
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+        assignment.setId(1);
+        assignment.setName("Update This");
+        assignment.setDueDate(Date.valueOf("2020-09-09"));
+
+        assertEquals("Update This", assignment.getName());
+        assertEquals("2020-09-09", assignment.getDueDate().toString());
+
+        when(assignmentRepository.save(assignment)).thenAnswer(invocation -> {
+            Assignment updated = invocation.getArgument(0);
+            assignment.setName("New Name");
+            assignment.setDueDate(Date.valueOf("2025-09-09"));
+            return updated;
+        });
+
+        Assignment updated = assignmentRepository.save(assignment);
+
+        assertEquals("New Name", updated.getName());
+        assertEquals("2025-09-09", updated.getDueDate().toString());
+
+    }
+
+    @Test
+    public void deleteAssignmentTest() throws Exception{
+        Course course = new Course();
+        course.setCourse_id(31249);
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+        assignment.setDueDate(Date.valueOf("2020-09-09"));
+        assignment.setName("Deletion Test");
+        assignment.setId(1);
+
+        when(assignmentRepository.findById(assignment.getId())).thenReturn(Optional.of(assignment));
+
+        assignmentRepository.deleteById(assignment.getId());
+
+        verify(assignmentRepository, times(1)).deleteById(assignment.getId());
+
+    }
+    @Test
     public void getAllAssignmentsTest() throws Exception{
 
-        String instMail = "ybyun@csumb.edu";
+        String instMail = "dwisneski@csumb.edu";
         Assignment a1 = new Assignment();
         a1.setName("Recursion");
-        a1.setId(1);
         a1.setDueDate(Date.valueOf("2002-10-13"));
 
         Assignment a2 = new Assignment();
         a2.setName("Android Databases");
-        a2.setId(2);
         a2.setDueDate(Date.valueOf("2003-09-06"));
 
         List<Assignment> l1 = new ArrayList<>();
@@ -83,20 +129,22 @@ public class JunitTestAssignmentController {
         l3.addAll(l1);
         l3.addAll(l2);
 
+
+
         Course c1 = new Course();
         c1.setAssignments(l1);
-        c1.setCourse_id(370);
-        c1.setSemester("Spring");
-        c1.setTitle("Design & Analysis of Algorithms");
-        c1.setYear(2023);
+        c1.setCourse_id(31045);
+        c1.setSemester("Fall");
+        c1.setTitle("CST 363 - Introduction to Database Systems");
+        c1.setYear(2020);
         a1.setCourse(c1);
 
         Course c2 = new Course();
         c2.setAssignments(l2);
-        c1.setCourse_id(338);
-        c2.setSemester("Spring");
-        c2.setTitle("Software Design");
-        c2.setYear(2023);
+        c1.setCourse_id(31249);
+        c2.setSemester("Fall");
+        c2.setTitle("CST 237 - Intro to Computer Architecture");
+        c2.setYear(2020);
         a2.setCourse(c2);
 
         when(assignmentRepository.findByEmail(instMail)).thenReturn(l3);
@@ -120,8 +168,8 @@ public class JunitTestAssignmentController {
         }
         assertEquals(200,response.getStatus());
         assertEquals(2, DTOS.length);
-        assertEquals("Software Design", DTOS[1].courseTitle());
-        assertEquals("Design & Analysis of Algorithms", DTOS[0].courseTitle());
+        assertEquals("CST 363 - Introduction to Database Systems", DTOS[0].courseTitle());
+        assertEquals("CST 237 - Intro to Computer Architecture", DTOS[1].courseTitle());
         assertEquals(a1.toString(), c1.getAssignments().get(0).toString()); //checking if the toString of the assignment matches the one in the list for the course
         assertEquals(a2.toString(), c2.getAssignments().get(0).toString()); //Checking for second course
     }

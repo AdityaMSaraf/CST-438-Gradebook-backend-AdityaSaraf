@@ -25,10 +25,13 @@ public class AssignmentController {
 
     @Autowired
     CourseRepository courseRepository;
+
+
+
     @PostMapping("/assignment")
     public int createAssignment(@RequestBody AssignmentDTO assignmentDTO){
         Assignment assignment = new Assignment();
-        assignment.setId(assignmentDTO.id());
+//        assignment.setId(assignmentDTO.id());
         assignment.setCourse(courseRepository.findById(assignmentDTO.courseId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")));
         assignment.setName(assignmentDTO.assignmentName());
         assignment.setDueDate(Date.valueOf(assignmentDTO.dueDate()));
@@ -68,13 +71,12 @@ public class AssignmentController {
         Assignment assignment = assignmentRepository.findById(id)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 
+
         if(force.isEmpty() && !assignment.getCourse().getEnrollments().isEmpty()){
-            throw(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollments exist for this course, please use force to confirm deletion"));
+            throw(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grades exist for this assignment, please use force to confirm deletion"));
         } else if ((force.isPresent() && force.get()) || assignment.getCourse().getEnrollments().isEmpty()) {
             assignmentRepository.delete(assignment);
         }
-
-
     }
 
     @GetMapping("/assignment")
