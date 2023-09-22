@@ -47,7 +47,15 @@ public class Assignment {
 	public void setDueDate(Date dueDate) {
 		this.dueDate = dueDate;
 	}
-	
+
+	public List<AssignmentGrade> getAssignmentGrades() {
+		return assignmentGrades;
+	}
+
+	public void setAssignmentGrades(List<AssignmentGrade> assignmentGrades) {
+		this.assignmentGrades = assignmentGrades;
+	}
+
 	public Course getCourse() {
 		return course;
 	}
