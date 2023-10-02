@@ -73,9 +73,9 @@ public class AssignmentController {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 
 
-        if(force.isEmpty() && !assignment.getCourse().getEnrollments().isEmpty()){
+        if((force.isEmpty() || (force.isPresent() && !force.get())) && !assignment.getAssignmentGrades().isEmpty()){
             throw(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grades exist for this assignment, please use force to confirm deletion"));
-        } else if ((force.isPresent() && force.get()) || assignment.getCourse().getEnrollments().isEmpty()) {
+        } else if ((force.isPresent() && force.get()) || assignment.getAssignmentGrades().isEmpty()) {
             assignmentRepository.delete(assignment);
         }
     }
