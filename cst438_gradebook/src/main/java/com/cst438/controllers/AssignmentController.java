@@ -54,9 +54,10 @@ public class AssignmentController {
     }
 
     @PutMapping("/assignment/{id}")
-    public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO){
+    public void updateAssignment(@PathVariable("id") int id,
+                                 @RequestBody AssignmentDTO assignmentDTO){
         Assignment assignment = new Assignment();
-        assignment.setId(assignmentDTO.id());
+        assignment.setId(id);
         assignment.setCourse(courseRepository.findById(assignmentDTO.courseId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")));
         assignment.setName(assignmentDTO.assignmentName());
         assignment.setDueDate(Date.valueOf(assignmentDTO.dueDate()));
