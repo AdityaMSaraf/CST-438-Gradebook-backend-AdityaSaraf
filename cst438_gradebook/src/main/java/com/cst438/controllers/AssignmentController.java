@@ -54,9 +54,10 @@ public class AssignmentController {
     }
 
     @PutMapping("/assignment/{id}")
-    public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO){
+    public void updateAssignment(@PathVariable("id") int id,
+                                 @RequestBody AssignmentDTO assignmentDTO){
         Assignment assignment = new Assignment();
-        assignment.setId(assignmentDTO.id());
+        assignment.setId(id);
         assignment.setCourse(courseRepository.findById(assignmentDTO.courseId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")));
         assignment.setName(assignmentDTO.assignmentName());
         assignment.setDueDate(Date.valueOf(assignmentDTO.dueDate()));
@@ -72,9 +73,9 @@ public class AssignmentController {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 
 
-        if(force.isEmpty() && !assignment.getCourse().getEnrollments().isEmpty()){
+        if((force.isEmpty() || (force.isPresent() && !force.get())) && !assignment.getAssignmentGrades().isEmpty()){
             throw(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grades exist for this assignment, please use force to confirm deletion"));
-        } else if ((force.isPresent() && force.get()) || assignment.getCourse().getEnrollments().isEmpty()) {
+        } else if ((force.isPresent() && force.get()) || assignment.getAssignmentGrades().isEmpty()) {
             assignmentRepository.delete(assignment);
         }
     }
