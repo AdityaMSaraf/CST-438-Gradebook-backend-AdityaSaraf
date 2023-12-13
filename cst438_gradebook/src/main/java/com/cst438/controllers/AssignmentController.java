@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
+import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -81,9 +82,10 @@ public class AssignmentController {
     }
 
     @GetMapping("/assignment")
-    public AssignmentDTO[] getAllAssignmentsForInstructor() {
+    public AssignmentDTO[] getAllAssignmentsForInstructor(Principal principal) {
+        System.out.print(principal.getName());
         // get all assignments for this instructor
-        String instructorEmail = "dwisneski@csumb.edu";  // username (should be instructor's email)
+        String instructorEmail = principal.getName();  // username (should be instructor's email)
         List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
         AssignmentDTO[] result = new AssignmentDTO[assignments.size()];
         for (int i = 0; i < assignments.size(); i++) {
